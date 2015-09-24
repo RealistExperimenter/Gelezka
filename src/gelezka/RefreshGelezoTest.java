@@ -57,7 +57,7 @@ public class RefreshGelezoTest {
         refreshAllPosts(listOfLinks);
 
            try {
-               Thread.sleep(7500 * 1000);
+               Thread.sleep(7800 * 1000);
            } catch (InterruptedException e) {
            }
        }
