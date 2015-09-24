@@ -11,7 +11,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +21,7 @@ public class RefreshGelezoTest {
     private StringBuffer verificationErrors = new StringBuffer();
     private String userPassword, userName, baseUrl;
     private List<String> listOfLinks;
+    private WebElement temp;
 
     //  private final Wait<WebDriver> wait = new WebDriverWait(driver, 5).withMessage("Element was not found");
 
@@ -36,6 +36,7 @@ public class RefreshGelezoTest {
     @Before
     public void setUp() throws Exception {
         driver = new ChromeDriver();
+     //   driver = new FirefoxDriver();
         baseUrl = "http://gelezo.com.ua/";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 
@@ -75,22 +76,23 @@ public class RefreshGelezoTest {
 
         signIn = driver.findElement(By.name("submit"));
 
-
-
         uname.sendKeys(userName);
         pass.sendKeys(userPassword);
         signIn.click();
-        Assert.assertTrue("Successfully signed",driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[1]/b")).getText().matches("realist2000"));
 
+        if (driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[1]/b")).getText().matches(userName)) {System.out.println("Site will be used with user: "+userName);}
+        else  System.out.println("Can't login with "+userName+" user");
+        //String s = (char)27 + "[36mbla-bla-bla"
     }
 
     private void refreshAllPosts(List<String> listOfLinks){
 
         for (int i = 0; i < listOfLinks.size(); i++) {
             driver.get(listOfLinks.get(i));
+            temp = driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[2]/td[1]/table/tbody/tr/td[2]/a"));
+            System.out.println("Refreshing posts on "+temp.getText()+" board");
             refreshPosts();
         }
-
     }
 
 
@@ -110,7 +112,7 @@ public class RefreshGelezoTest {
             driver.navigate().back();
 
         }
-
+        System.out.println(uname.size()+"posts successfully refreshed");
     }
 
 
