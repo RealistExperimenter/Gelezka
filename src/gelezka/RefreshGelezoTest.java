@@ -12,6 +12,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 import java.util.List;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class RefreshGelezoTest {
@@ -44,7 +45,6 @@ public class RefreshGelezoTest {
         userName=data.getUserName();
         userPassword=data.getUserPassword();
         listOfLinks=data.getListOfLinks();
-        System.out.println("Site will be used with user: "+userName);
     }
 
 
@@ -90,7 +90,7 @@ public class RefreshGelezoTest {
         for (int i = 0; i < listOfLinks.size(); i++) {
             driver.get(listOfLinks.get(i));
             temp = driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[2]/td[1]/table/tbody/tr/td[2]/a"));
-            System.out.println("Refreshing posts on "+temp.getText()+" board");
+            System.out.println("Refreshing posts on \""+temp.getText()+"\" board");
             refreshPosts();
         }
     }
@@ -112,7 +112,7 @@ public class RefreshGelezoTest {
             driver.navigate().back();
 
         }
-        System.out.println(uname.size()+"posts successfully refreshed");
+        System.out.println(uname.size()+" posts successfully refreshed  "+ new Date());
     }
 
 
