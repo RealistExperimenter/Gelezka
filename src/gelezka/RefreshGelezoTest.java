@@ -80,19 +80,20 @@ public class RefreshGelezoTest {
         pass.sendKeys(userPassword);
         signIn.click();
 
-        if (driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[1]/b")).getText().matches(userName)) {System.out.println("Site will be used with user: "+userName);}
-        else  System.out.println("Can't login with "+userName+" user");
+        if (driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[1]/b")).getText().matches(userName)) {System.out.println("Site will be used with the user: "+userName);}
+        else  System.out.println("Can't login with the "+userName+" user"); System.out.println("");
         //String s = (char)27 + "[36mbla-bla-bla"
     }
 
     private void refreshAllPosts(List<String> listOfLinks){
-
+        System.out.println("Action time: "+ new Date());
         for (int i = 0; i < listOfLinks.size(); i++) {
             driver.get(listOfLinks.get(i));
             temp = driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[2]/td[1]/table/tbody/tr/td[2]/a"));
-            System.out.println("Refreshing posts on \""+temp.getText()+"\" board");
+            System.out.println("   Refreshing posts on \""+temp.getText()+"\" board");
             refreshPosts();
         }
+        System.out.println("");
     }
 
 
@@ -112,7 +113,7 @@ public class RefreshGelezoTest {
             driver.navigate().back();
 
         }
-        System.out.println(uname.size()+" posts successfully refreshed  "+ new Date());
+        System.out.println("     "+uname.size()+" posts successfully refreshed");
     }
 
 
