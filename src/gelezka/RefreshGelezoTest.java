@@ -31,6 +31,7 @@ public class RefreshGelezoTest {
         listOfLinks=data.getListOfLinks();
     }
 
+
     private void createDriver(){
         driver = new ChromeDriver();
         System.out.println();
@@ -53,6 +54,7 @@ public class RefreshGelezoTest {
        }
     }
 
+
     private void login(){
 
         WebElement pass,uname,signIn;
@@ -73,6 +75,7 @@ public class RefreshGelezoTest {
          //String s = (char)27 + "[36mbla-bla-bla"
     }
 
+
     private void refreshAllPosts(List<String> listOfLinks){
         System.out.println("Action time: "+ new Date());
         for (int i = 0; i < listOfLinks.size(); i++) {
@@ -86,8 +89,6 @@ public class RefreshGelezoTest {
     }
 
 
-
-
     private void refreshPosts(){
 
         List<WebElement> uname = driver.findElements(By.linkText("Обновить"));
@@ -99,8 +100,8 @@ public class RefreshGelezoTest {
         }
 
         for (int i = 0; i != uname.size(); i++) {
-          //  List<WebElement> names = driver.findElements(By.linkText("Обновить"));
-            uname.get(i).click();
+            List<WebElement> names = driver.findElements(By.linkText("Обновить"));
+            names.get(i).click();
             try {
                 Thread.sleep(1 * 1000);
             } catch (InterruptedException e) {System.out.println("Error under sleep");}
