@@ -48,10 +48,15 @@ public class RefreshGelezoTest {
               login();
               refreshAllPosts(listOfLinks);
               driver.quit();
-           try {
-               Thread.sleep(7800 * 1000);
-           } catch (InterruptedException e) {System.out.println("Error under sleep");}
+              waitSec(7800);
        }
+    }
+
+
+    private void waitSec(int sec){
+        try {
+            Thread.sleep(sec * 1000);
+        } catch (InterruptedException e) {System.out.println("Error under sleep");}
     }
 
 
@@ -102,17 +107,16 @@ public class RefreshGelezoTest {
         for (int i = 0; i != uname.size(); i++) {
             List<WebElement> names = driver.findElements(By.linkText("Обновить"));
             names.get(i).click();
-            try {
-                Thread.sleep(1 * 1000);
-            } catch (InterruptedException e) {System.out.println("Error under sleep");}
+            waitSec(1);
             try {
                 temp = driver.findElement(By.xpath("/html/body/div/table[3]/tbody/tr/td/font/h2"));
-            } catch (Exception e) {errCount--;  System.out.println("Some Error with err message element");}
+            } catch (Exception e) {errCount--;}
             driver.navigate().back();
+            waitSec(1);
         }
 
         System.out.println("     "+(uname.size()-errCount)+" posts successfully refreshed");
-        if (errCount != 0)  System.out.println("     "+errCount+" posts not refreshed. Maybe available refresh time larger than 2 hours and 10 minutes.");
+        if (errCount != 0)  System.out.println("     "+errCount+" posts is not refreshed. Maybe available refresh time larger than 2 hours and 10 minutes.");
     }
 
 
