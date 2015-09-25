@@ -77,7 +77,6 @@ public class RefreshGelezoTest {
         signIn.click();
 
         if (!(driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[1]/b")).getText().matches(userName))) {System.out.println("Can't login with the " + userName + " user");}
-         //String s = (char)27 + "[36mbla-bla-bla"
     }
 
 
