@@ -53,7 +53,7 @@ public class ReadXML {
             for (int i = 0; i != postsLinks.getLength();i++) listOfLinks.add(postsLinks.item(i).getTextContent());
 
         } catch (Exception ei) {
-            System.out.println("error with file");
+            System.out.println("Error with the settings file");
         }
     }
 }
