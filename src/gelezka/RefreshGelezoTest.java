@@ -12,7 +12,6 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 
 import java.util.List;
 import java.util.Date;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 public class RefreshGelezoTest {
@@ -34,6 +33,7 @@ public class RefreshGelezoTest {
 
     private void createDriver(){
         driver = new ChromeDriver();
+        System.out.println();
         System.out.println("Site will be used with the user: "+userName);
         //   driver = new FirefoxDriver();
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -82,7 +82,7 @@ public class RefreshGelezoTest {
             System.out.println("   Refreshing posts on \""+temp.getText()+"\" board");
             refreshPosts();
         }
-        System.out.println("");
+        System.out.println();
     }
 
 
