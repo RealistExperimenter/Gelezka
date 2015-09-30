@@ -41,7 +41,7 @@ public class Initializer {
         Key checkUser=new Key();
 
        if (userKey.length()!=128||userKey==null) { System.out.println();
-            System.out.println("Problem with your UserKey: you will use Trial version");
+            System.out.println("Проблема с Вашим ключом, Вы будете использовать пробную версию.");
             return false;
         }
         return checkUser.decodeKey(userKey).matches(userName);

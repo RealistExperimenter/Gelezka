@@ -51,7 +51,7 @@ public class ReadXML {
 
 
         } catch (Exception e) {
-            System.out.println("Error with the settings file");
+            System.out.println("Ошибка с файлом конфигурации");
         }
     }
 }

@@ -36,24 +36,24 @@ public class RefreshGelezoTest {
         userName=init.getUserName();
         userPassword=init.getUserPassword();
         licensedUser=init.isLicensedUser();
-        temp=licensedUser ? "Full version":"Trial version. Only 1 post on 1 board will be refreshed every 10 hour";
+        temp=licensedUser ? "Полную версию программы":"Пробную версию программы. Доступно только 1 объявление на 1 доске с периодом 10 часов";
         if (!licensedUser) {
             refreshRate=36000;
             countToRefresh=1;
         }
         System.out.println();
-        System.out.println("Site will be used with the user: "+userName);
-        System.out.println("This user uses: " + temp);
+        System.out.println("Сайт будет использоваться пользователем: "+userName);
+        System.out.println("Этот пользователь использует: " + temp);
         createDriver();
         login();
         listOfLinks=init.getListOfLinks(driver);
 
         System.out.println();
 
-        System.out.println("User have posts on "+listOfLinks.size()+" boards");
+        System.out.println("У пользователя сообщения на "+listOfLinks.size()+" досках");
 
         if (7800-init.getlastTime()>0) {
-            System.out.println("refresh starts in: "+String.valueOf((7800-init.getlastTime())/60)+" minutes");
+            System.out.println("Обновление начнется через: "+String.valueOf((7800-init.getlastTime())/60)+" минут");
             driver.quit();
             waitSec(7800-init.getlastTime());
         }
@@ -74,13 +74,12 @@ public class RefreshGelezoTest {
         while(true) {
             if (driver == null) {
                 createDriver();
-                System.out.println("create driver");
                 login();
             }
 
               refreshAllPosts(listOfLinks,countToRefresh);
               driver.quit();
-              System.out.println("Next refresh will be on "+LocalTime.now().plusMinutes(130).getHour()+":"+LocalTime.now().plusMinutes(130).getMinute());
+              System.out.println("Следующее обновление будет в "+LocalTime.now().plusMinutes(130).getHour()+":"+LocalTime.now().plusMinutes(130).getMinute());
               waitSec(refreshRate);
        }
     }
@@ -109,7 +108,7 @@ public class RefreshGelezoTest {
         pass.sendKeys(userPassword);
         signIn.click();
 
-        if (!(driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[1]/b")).getText().matches(userName))) {System.out.println("Can't login with the " + userName + " user");}
+        if (!(driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[2]")).getText().matches("выйти"))) {System.out.println("Не могу залогиниться пользователем " + userName + ". Пожалуйста проверьте правильность пароля и имени пользователя в файле настроек.");}
     }
 
 
@@ -117,12 +116,12 @@ public class RefreshGelezoTest {
         int boards = listOfLinks.size();
         if (boardsCount > 0) {boards=boardsCount;}
 
-        System.out.println("Action time: "+ LocalDate.now().toString()+" "+LocalTime.now().getHour()+":"+LocalTime.now().getMinute()+":"+LocalTime.now().getSecond());
+        System.out.println("Время обновления: "+ LocalDate.now().toString()+" "+LocalTime.now().getHour()+":"+LocalTime.now().getMinute()+":"+LocalTime.now().getSecond());
         for (int i = 0; i < boards; i++) {
             driver.get(listOfLinks.get(i));
             temp = driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[2]/td[1]/table/tbody/tr/td[2]/a"));
             System.out.println("");
-            System.out.println("   Refreshing posts on \""+temp.getText()+"\" board");
+            System.out.println("   Обновления сообщений на \""+temp.getText()+"\" доске");
             refreshPosts(boardsCount);
         }
         System.out.println();
@@ -136,7 +135,7 @@ public class RefreshGelezoTest {
         int count=errCount;
 
         if (errCount == 0) {
-            System.out.println("    Something wrong. There is no any post on the "+temp.getText()+"\" board. Please add some or delete a board link from the my_settings.xml file.");
+            System.out.println("    Ошибка, нету сообщений на доске "+temp.getText()+"\". Пожалуйста добавьте сообщения на доску");
             return;
         }
         if (countOfPosts > 0) {count=countOfPosts;}
@@ -150,7 +149,7 @@ public class RefreshGelezoTest {
             waitSec(1);
         }
         if (uname.size()-errCount != 0) {
-            System.out.println("     "+(uname.size()-errCount)+" posts successfully refreshed");
+            System.out.println("     "+(uname.size()-errCount)+" сообщений успешно обновлены");
         }
 
         if (errCount != 0) {
@@ -162,8 +161,8 @@ public class RefreshGelezoTest {
                 }
             }
             if (count !=0) {
-                System.out.println("     "+count+" wholesale posts will be refreshed under the next refresh session");
-            }else  System.out.println("     "+errCount+" posts will be refreshed later");
+                System.out.println("     "+count+" оптовых сообщений будет обновлено позже");
+            }else  System.out.println("     "+errCount+" сообщений будет обновлено позже");
         }
     }
 
