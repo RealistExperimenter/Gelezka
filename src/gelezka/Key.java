@@ -1,8 +1,6 @@
 package gelezka;
 
-/**
- * Created by Coder on 28-Sep-15.
- */
+
 public class Key {
     public String decodeKey(String key){
         return this.decode(key);

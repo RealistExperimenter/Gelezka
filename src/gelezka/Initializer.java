@@ -10,20 +10,25 @@ import java.util.List;
 import java.util.Set;
 import java.time.LocalTime;
 
-/**
- * Created by Coder on 28-Sep-15.
- */
+
 public class Initializer {
     private String userPassword, userName, userKey;
     private List<String> listOfLinks=new LinkedList<String>();
     private WebDriver driver;
     private int lastTime;
-
-    Initializer(){
+    private ProgrammWindow print;
+    
+    Initializer(ProgrammWindow print){
         ReadXML data = new ReadXML();
         userName=data.getUserName();
         userPassword=data.getUserPassword();
         userKey=data.getUserKey();
+        this.print=print;
+        if (userPassword == null||userName==null||userKey==null) {
+            print.addSting("");
+            print.addSting("~~~~~~~~~~~~~~~~~~~~~~~~~~ОШИБКА~~~~~~~~~~~~~~~~~~~~~~~~~");
+          print.addSting("Ошибка в файле настроек");
+        }
     }
 
 
@@ -40,8 +45,8 @@ public class Initializer {
     public boolean isLicensedUser(){
         Key checkUser=new Key();
 
-       if (userKey.length()!=128||userKey==null) { System.out.println();
-            System.out.println("Проблема с Вашим ключом, Вы будете использовать пробную версию.");
+       if (userKey.length()!=128||userKey==null) { print.addSting("");
+           print.addSting("Проблема с Вашим ключом, Вы будете использовать пробную версию. Чтобы использовать полную версию напишите на email: gelezo.refresh@gmail.com для получения ключа");
             return false;
         }
         return checkUser.decodeKey(userKey).matches(userName);
@@ -74,6 +79,11 @@ public class Initializer {
             } catch (Exception e) {haveElements=false;}
             count++;
         }
+
+        if (listOfLinks.size() == 0) {
+            return boards;
+        }
+
         lastTime= lastTimeDiff();
         return boards;
         }

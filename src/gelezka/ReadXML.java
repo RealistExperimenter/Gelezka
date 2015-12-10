@@ -1,7 +1,4 @@
 package gelezka;
-/**
- * Created by Coder on 21-Sep-15.
- */
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -51,7 +48,7 @@ public class ReadXML {
 
 
         } catch (Exception e) {
-            System.out.println("Ошибка с файлом конфигурации");
+            System.out.println("Ошибка с файлом настроек");
         }
     }
 }
