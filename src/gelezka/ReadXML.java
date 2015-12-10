@@ -1,7 +1,4 @@
 package gelezka;
-/**
- * Created by Coder on 21-Sep-15.
- */
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -15,8 +12,8 @@ import java.util.List;
 
 public class ReadXML {
 
-    String userName,userPassword;
-    List<String> listOfLinks = new LinkedList<String>();
+    String userName,userPassword,userKey;
+
 
     public String getUserName(){
         return userName;
@@ -26,9 +23,7 @@ public class ReadXML {
         return userPassword;
     }
 
-    public List<String> getListOfLinks(){
-        return listOfLinks;
-    }
+    public String getUserKey(){ return userKey; }
 
      ReadXML() {
 
@@ -45,15 +40,15 @@ public class ReadXML {
             Element user = doc.getDocumentElement();
             NodeList uName = user.getElementsByTagName("user_name");
             NodeList uPass = user.getElementsByTagName("user_password");
-            NodeList postsLinks = user.getElementsByTagName("posts_links");
+            NodeList key = user.getElementsByTagName("key");
 
             userName = uName.item(0).getTextContent();
             userPassword = uPass.item(0).getTextContent();
+            userKey=key.item(0).getTextContent();
 
-            for (int i = 0; i != postsLinks.getLength();i++) listOfLinks.add(postsLinks.item(i).getTextContent());
 
-        } catch (Exception ei) {
-            System.out.println("Error with the settings file");
+        } catch (Exception e) {
+            System.out.println("Ошибка с файлом настроек");
         }
     }
 }
