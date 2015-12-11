@@ -80,7 +80,7 @@ public class Initializer {
             count++;
         }
 
-        if (listOfLinks.size() == 0) {
+        if (boards.size() == 0) {
             return boards;
         }
 
