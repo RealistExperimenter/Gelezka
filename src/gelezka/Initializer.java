@@ -4,19 +4,33 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.time.LocalTime;
+import java.util.*;
+
 
 
 public class Initializer {
     private String userPassword, userName, userKey;
     private List<String> listOfLinks=new LinkedList<String>();
     private WebDriver driver;
-    private int lastTime;
     private ProgrammWindow print;
+    private PostsStorage postStorage=new PostsStorage();
+
+
+
+    public void reinitialize(){
+        postStorage=new PostsStorage();
+        listOfBoards();
+    }
+
+    public PostsStorage getPostStorage() {
+        return postStorage;
+    }
+
+    public void setPostStorage(PostsStorage postStorage) {
+        this.postStorage = postStorage;
+    }
+
+    String postsLocator="/html/body/div/center/table[1]/tbody/tr/td[3]/div[";
     
     Initializer(ProgrammWindow print){
         ReadXML data = new ReadXML();
@@ -30,6 +44,8 @@ public class Initializer {
           print.addSting("Ошибка в файле настроек");
         }
     }
+
+
 
 
     public String getUserName(){
@@ -59,16 +75,12 @@ public class Initializer {
     }
 
 
-    public int getlastTime(){
-        return lastTime;
-    }
-
-
     private Set<String> listOfBoards(){
         Set<String> boards=new LinkedHashSet<String>();
         boolean haveElements=true;
-        int count=1;
+        int count=1, count3=1;
         WebElement temp;
+
 
         driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[1]/b")).click();
      //   driver.findElements(By.className("titlPost"));
@@ -76,56 +88,23 @@ public class Initializer {
             try {
                 temp=driver.findElement(By.xpath("/html/body/div/center/table[1]/tbody/tr/td[3]/a["+count+"]"));
                 boards.add(temp.getAttribute("href"));
+                postStorage.addPostToStorage(new PostInfo(driver.findElement(By.xpath(postsLocator+String.valueOf(count3)+"]")),driver.findElement(By.xpath(postsLocator+String.valueOf(count3+1)+"]")),driver.findElement(By.xpath(postsLocator+String.valueOf(count3+2)+"]")),temp.getAttribute("href")));
+
             } catch (Exception e) {haveElements=false;}
             count++;
+            count3+=3;
         }
 
         if (boards.size() == 0) {
             return boards;
         }
 
-        lastTime= lastTimeDiff();
+
         return boards;
         }
 
 
-    private int lastTimeDiff(){
-        List<WebElement> time = driver.findElements(By.className("titlPost"));
-        List<String> times= new LinkedList<String>();
-
-        for(WebElement el:time){
-            times.add(getTime(el.getText()));
-        }
-
-        int[] seconds=new int[times.size()];
-
-        for (int i = 0; i < times.size(); i++) {
-           seconds[i]=LocalTime.now().toSecondOfDay()-LocalTime.parse(times.get(i)).toSecondOfDay();
-            if (LocalTime.now().toSecondOfDay()-LocalTime.parse(times.get(i)).toSecondOfDay()<-78600)  seconds[i]=LocalTime.now().toSecondOfDay()-LocalTime.parse(times.get(i)).toSecondOfDay()+86400;
-            if (LocalTime.now().toSecondOfDay()-LocalTime.parse(times.get(i)).toSecondOfDay()>-78600&&LocalTime.now().toSecondOfDay()-LocalTime.parse(times.get(i)).toSecondOfDay()<0)  seconds[i]=7800;
-        }
-
-        int max=seconds[0];
-
-        for (int i = 1; i < times.size(); i++) {
-            if (max > seconds[i]) {
-                max = seconds[i];
-            }
-        }
-        return max;
-    }
 
 
-    private String getTime(String text){
-        char[] string = text.toCharArray();
-        int index=0;
-
-        for (int i = 0; string[i]!=':'&&i<string.length-1; i++) {
-            index=i+1;
-        }
-
-        char[] temp={string[index-2],string[index-1],string[index],string[index+1],string[index+2]};
-        return String.valueOf(temp);
-    }
 }
 

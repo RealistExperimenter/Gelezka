@@ -8,14 +8,16 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.UnreachableBrowserException;
 
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class RefreshGelezo {
+public class RefreshGelezo implements Runnable {
 
     private WebDriver driver;
     private String userPassword, userName, baseUrl;
@@ -25,10 +27,16 @@ public class RefreshGelezo {
     private int refreshRate = 7800;
     private int countToRefresh=0; //0 - all, 1- 1 board...
     private ProgrammWindow print;
+    private PostsStorage postStorage;
+    private boolean haveNewMessages = false;
+    private int countOfNewMessages=0;
+    private int countOfMessages=10000;
+    private LinkedList<String> comments=new LinkedList<String>();
 
 
 
-   RefreshGelezo(ProgrammWindow winPanel){
+
+    RefreshGelezo(ProgrammWindow winPanel){
         print=winPanel;
     }
 
@@ -39,7 +47,7 @@ public class RefreshGelezo {
         String temp="";
         baseUrl = "http://gelezo.com.ua/";
         Initializer init=new Initializer(print);
-
+        postStorage=init.getPostStorage();
         userName=init.getUserName();
         if (userName.length() <= 2) {
             print.addSting("");
@@ -63,6 +71,7 @@ public class RefreshGelezo {
         print.addSting("");
         print.addSting("Этот пользователь использует " + temp);
 
+
         createDriver();
         login();
         listOfLinks = init.getListOfLinks(driver);
@@ -79,20 +88,21 @@ public class RefreshGelezo {
 
         print.addSting("У пользователя сообщения на "+listOfLinks.size()+" досках");
 
-        if (7800-init.getlastTime()>0) {
+        int maxTime=postStorage.getMaxTime();
+        if (7800-maxTime>0) {
             print.addSting("");
             print.addSting("Текущее время: "+getTime());
-            print.addSting("Обновление начнется через: "+String.valueOf((7800-init.getlastTime())/60)+" минут");
+            print.addSting("Обновление начнется через: "+String.valueOf((7800-maxTime)/60)+" минут");
             driver.quit();
             driver=null;
-            waitSec(7800-init.getlastTime());
+            waitSec(7800-maxTime);
         }
     }
 
 
     private void createDriver(){
-       // driver = new ChromeDriver();
-          driver = new FirefoxDriver();
+        // driver = new ChromeDriver();
+        driver = new FirefoxDriver();
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 
@@ -110,7 +120,12 @@ public class RefreshGelezo {
             refreshAllPosts(listOfLinks,countToRefresh);
             driver.quit();
             driver=null;
-           print.addSting("Следующее обновление будет в "+correctingDateTime(LocalTime.now().plusMinutes(130).getHour())+":"+correctingDateTime(LocalTime.now().plusMinutes(130).getMinute()));
+            print.addSting("Следующее обновление будет в "+correctingDateTime(LocalTime.now().plusMinutes(130).getHour())+":"+correctingDateTime(LocalTime.now().plusMinutes(130).getMinute()));
+
+            if (haveNewMessages) new Thread(new  Message(print)).start();
+            if (comments.size()!=0) for (String x:comments) new Thread(new  Message(print,x)).start();
+            haveNewMessages=false;
+            comments.clear();
             waitSec(refreshRate);
         }
     }
@@ -126,7 +141,7 @@ public class RefreshGelezo {
     private void login(){
 
         WebElement pass,uname,signIn;
-
+        try {
         driver.get(baseUrl);
 
         uname = driver.findElement(By.name("UserName"));
@@ -138,7 +153,7 @@ public class RefreshGelezo {
         uname.sendKeys(userName);
         pass.sendKeys(userPassword);
         signIn.click();
-        try {
+
             if (!(driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[1]/a[2]")).getText().matches("выйти"))) {
                 print.addSting("");
                 print.addSting("~~~~~~~~~~~~~~~~~~~~~~~~~~ОШИБКА~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -163,59 +178,112 @@ public class RefreshGelezo {
         if (boardsCount > 0) {boards=boardsCount;}
         print.addSting("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         print.addSting("");
-       print.addSting("Время обновления: "+ getDate()+" "+getTime());
+        print.addSting("Время обновления: "+ getDate()+" "+getTime());
         for (int i = 0; i < boards; i++) {
             driver.get(listOfLinks.get(i));
             temp = driver.findElement(By.xpath("/html/body/div/table[1]/tbody/tr/td[2]/table/tbody/tr[2]/td[1]/table/tbody/tr/td[2]/a"));
-           print.addSting("");
-           print.addSting("   Обновления сообщений на \""+temp.getText()+"\" доске");
-            refreshPosts(boardsCount);
+            print.addSting("");
+            print.addSting("   Обновлениe сообщений на \""+temp.getText()+"\" доске...");
+            refreshPosts(boardsCount, listOfLinks.get(i));
         }
-       print.addSting("");
+
+        String text;
+        String[] result;
+        text=driver.findElements(By.xpath("html/body/div[1]/table[1]/tbody/tr/td[2]/table/tbody/tr[1]/td[2]/table/tbody/tr/td/div")).get(0).getAttribute("title");
+        result=text.split("\\D+");
+        int count=Integer.parseInt(result[1]);
+        if(((count>0)&&(count>countOfNewMessages)||Integer.parseInt(result[2])>countOfMessages))
+            haveNewMessages=true; countOfNewMessages=count; countOfMessages=Integer.parseInt(result[2]);
+
+
+
+        print.addSting("");
     }
 
 
-    private void refreshPosts(int countOfPosts){
+    private void refreshPosts(int countOfPosts, String board){
 
-        List<WebElement> uname = driver.findElements(By.linkText("Обновить"));
-        int errCount=uname.size();
-        int count=errCount;
+        List<PostInfo> list = postStorage.getPosts(Identifiers.BOARD_ADDRESS,board);
+        List<WebElement> refreshLinks = driver.findElements(By.linkText("Обновить"));
 
-        if (errCount == 0) {
+
+        if (list.size()!=refreshLinks.size()){
+            print.addSting("***********************************************************");
+            print.addSting("~~~~~~~~~~~~~~~~~~~~~~~~~~Внимание~~~~~~~~~~~~~~~~~~~~~~~~~");
+            print.addSting("   Изменилось количесво сообщений на досках. Запускается переинициализация программы.");
+            initialize();
+        }
+
+        List<WebElement> views = driver.findElements(By.partialLinkText("просмотров:"));
+        List<WebElement> messages = driver.findElements(By.partialLinkText("ответов:"));
+        String[] temp3;
+        String viewCount, messCount;
+
+
+        for (int i = 0; i < refreshLinks.size(); i++) {
+            viewCount=views.get(i).getText();
+            temp3= viewCount.split(":");
+            viewCount=temp3[temp3.length-1];
+
+            messCount=messages.get(i).getText();
+            temp3= messCount.split(":");
+            messCount=temp3[temp3.length-1];
+
+
+            try{
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.POST_VIEWS_COUNT, viewCount);
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.OLD_POST_MESSAGES_COUNT, String.valueOf(list.get(i).getPostMessagesCount()));
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.POST_MESSAGES_COUNT, messCount);
+            }
+            catch (Exception e){print.addSting("В связи с удалением объявлений в процессе работы программы, показания счетчиков могут быть не верными. Рекомендуеся перезапустить программу.");}
+        }
+
+          int count=refreshLinks.size();
+
+        if (count == 0) {
             print.addSting("");
-           print.addSting("~~~~~~~~~~~~~~~~~~~~~~~~~~ОШИБКА~~~~~~~~~~~~~~~~~~~~~~~~~");
-           print.addSting("    Ошибка, нету сообщений на доске "+temp.getText()+"\". Пожалуйста добавьте сообщения на доску");
+            print.addSting("~~~~~~~~~~~~~~~~~~~~~~~~~~ОШИБКА~~~~~~~~~~~~~~~~~~~~~~~~~");
+            print.addSting("    Ошибка, нету сообщений на доске "+temp.getText()+"\". Пожалуйста добавьте сообщения на доску");
             return;
         }
         if (countOfPosts > 0) {count=countOfPosts;}
 
         for (int i = 0; i != count; i++) {
             final List<WebElement> names = driver.findElements(By.linkText("Обновить"));
+            String postText;
             names.get(i).click();
             waitSec(1);
-            if (driver.findElements(By.xpath("/html/body/div/table[3]/tbody/tr/td/font/h2")).size() == 0) errCount--;
+            if (driver.findElements(By.xpath("/html/body/div/table[3]/tbody/tr/td/font/h2")).size() == 0 && !driver.getTitle().matches("Gelezo ERRORS")) {
+                list.get(i).setRefreshStatus(true);
+
+            } else list.get(i).setRefreshStatus(false);
+
+            temp3=list.get(i).getPostText().split("\\n");
+            postText= temp3[0].toCharArray().length<50? temp3[0]:temp3[0].substring(0, 49)+"...";
+
+
+
+
+            print.addSting("");
+            print.addSting("      Объявление: "+postText);
+            print.addSting("\t Статус: "+(list.get(i).getRefreshStatus() ? "Обновлено" : "Не обновлено"+(list.get(i).getPostCharacter() ? "\n Это оптовое сообщение, оно будет одновлено позже" : "")));
+            print.addSting("\t Просмотров: "+list.get(i).getPostViewsCount()+"  Сообщений под объявлением: "+list.get(i).getPostMessagesCount()+
+                    ((list.get(i).getPostMessagesCount()- list.get(i).getOldPostMessagesCount())!=0 ?   (list.get(i).getPostMessagesCount()- list.get(i).getOldPostMessagesCount())+" новое сообщение" : ""));
 
             driver.navigate().back();
+
+
             waitSec(1);
-        }
-        if (uname.size()-errCount != 0) {
-           print.addSting("     "+(uname.size()-errCount)+" сообщений успешно обновлены");
+            if ((list.get(i).getPostMessagesCount()- list.get(i).getOldPostMessagesCount())!=0) comments.add(postText);
         }
 
-        if (errCount != 0) {
-            count=0;
-            uname=driver.findElements(By.className("TextPost"));
-            for (int i = 0; i != uname.size(); i++) {
-                if (uname.get(i).getText().startsWith("[o]")) {
-                    count++;
-                }
+            if (!licensedUser){
+                print.addSting("+==================================================================+");
+                print.addSting("|  Больше объявлений будет обновляться в полной версии программы.  |");
+                print.addSting("|                Пишите на gelezo.refresh@gmail.com                |");
+                print.addSting("+==================================================================+");
             }
-            if (count !=0) {
-               print.addSting("     "+count+" оптовых сообщений будет обновлено позже.");
-            }else if (licensedUser == false) {
-                print.addSting("Больше объявлений будет обновляться в полной версии программы.");
-            } else print.addSting("     "+errCount+" сообщений будет обновлено позже.");
-        }
+
     }
 
     private String getTime(){
@@ -232,14 +300,21 @@ public class RefreshGelezo {
         if (input < 10) {
             return  "0"+String.valueOf(input);
         }
-       return String.valueOf(input);
+        return String.valueOf(input);
     }
 
 
     public void closeDriverStopProgramm(){
         if (driver != null) {
-            driver.quit();
+            try {
+                driver.quit();
+            }
+            catch (UnreachableBrowserException e){System.out.println("Browser already closed");}
         }
         System.exit(0);
+    }
+    @Override
+    public void run(){
+        refresh();
     }
 }

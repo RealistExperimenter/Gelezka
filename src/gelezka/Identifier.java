@@ -1,0 +1,19 @@
+package gelezka;
+
+ enum Identifiers {
+    ID,
+    POST_TEXT,
+    POST_TIME,
+    POST_DATE,
+    POST_LINK,
+    POST_CHARACTER,
+    POST_TYPE,
+    POST_VIEWS_COUNT,
+    POST_MESSAGES_COUNT,
+    OLD_POST_MESSAGES_COUNT,
+    BOARD_NAME,
+    BOARD_ADDRESS,
+    FORUM_LINK,
+    REFRESH_STATUS,
+    NULL_PARAMETER
+}

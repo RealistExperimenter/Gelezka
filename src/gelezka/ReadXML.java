@@ -7,8 +7,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+
 
 public class ReadXML {
 
@@ -27,7 +26,7 @@ public class ReadXML {
 
      ReadXML() {
 
-        File fXml = new File("my_settings.xml");
+        File fXml = new File("./my_settings.xml");
 
 
         try {
