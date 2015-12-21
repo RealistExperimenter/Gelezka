@@ -216,8 +216,9 @@ public class RefreshGelezo implements Runnable {
 
         List<WebElement> views = driver.findElements(By.partialLinkText("просмотров:"));
         List<WebElement> messages = driver.findElements(By.partialLinkText("ответов:"));
+        List<WebElement> id = driver.findElements(By.partialLinkText("подробно"));
         String[] temp3;
-        String viewCount, messCount;
+        String viewCount, messCount, messageId;
 
 
         for (int i = 0; i < refreshLinks.size(); i++) {
@@ -229,11 +230,15 @@ public class RefreshGelezo implements Runnable {
             temp3= messCount.split(":");
             messCount=temp3[temp3.length-1];
 
+            messageId=id.get(i).getAttribute("href");
+            temp3=messageId.split("//");
+            messageId=temp3[temp3.length-1];
+
 
             try{
-            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.POST_VIEWS_COUNT, viewCount);
-            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.OLD_POST_MESSAGES_COUNT, String.valueOf(list.get(i).getPostMessagesCount()));
-            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.POST_MESSAGES_COUNT, messCount);
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(messageId), Identifiers.POST_VIEWS_COUNT, viewCount);
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(messageId), Identifiers.OLD_POST_MESSAGES_COUNT, String.valueOf(list.get(i).getPostMessagesCount()));
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(messageId), Identifiers.POST_MESSAGES_COUNT, messCount);
             }
             catch (Exception e){print.addSting("В связи с удалением объявлений в процессе работы программы, показания счетчиков могут быть не верными. Рекомендуеся перезапустить программу.");}
         }
