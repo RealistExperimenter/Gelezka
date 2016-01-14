@@ -231,9 +231,8 @@ public class RefreshGelezo implements Runnable {
             messCount=temp3[temp3.length-1];
 
             messageId=id.get(i).getAttribute("href");
-            temp3=messageId.split("//");
+            temp3=messageId.split("/");
             messageId=temp3[temp3.length-1];
-
 
             try{
             postStorage.writeChanges(Identifiers.ID, String.valueOf(messageId), Identifiers.POST_VIEWS_COUNT, viewCount);
