@@ -8,6 +8,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
 
@@ -24,7 +25,7 @@ public class RefreshGelezo implements Runnable {
     private List<String> listOfLinks;
     private WebElement temp;
     private boolean licensedUser;
-    private int refreshRate = 7800;
+    private int refreshRate = 14400; // 4 hours
     private int countToRefresh=0; //0 - all, 1- 1 board...
     private ProgrammWindow print;
     private PostsStorage postStorage;
@@ -102,7 +103,8 @@ public class RefreshGelezo implements Runnable {
 
     private void createDriver(){
         // driver = new ChromeDriver();
-        driver = new FirefoxDriver();
+       // driver = new FirefoxDriver();
+        driver=new HtmlUnitDriver();
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 
@@ -205,7 +207,7 @@ public class RefreshGelezo implements Runnable {
 
         List<PostInfo> list = postStorage.getPosts(Identifiers.BOARD_ADDRESS,board);
         List<WebElement> refreshLinks = driver.findElements(By.linkText("Обновить"));
-
+        List<PostInfo> sortedList=new LinkedList<PostInfo>();
 
         if (list.size()!=refreshLinks.size()){
             print.addSting("***********************************************************");
@@ -216,8 +218,9 @@ public class RefreshGelezo implements Runnable {
 
         List<WebElement> views = driver.findElements(By.partialLinkText("просмотров:"));
         List<WebElement> messages = driver.findElements(By.partialLinkText("ответов:"));
+        List<WebElement> id = driver.findElements(By.partialLinkText("подробно"));
         String[] temp3;
-        String viewCount, messCount;
+        String viewCount, messCount, messageId;
 
 
         for (int i = 0; i < refreshLinks.size(); i++) {
@@ -229,14 +232,21 @@ public class RefreshGelezo implements Runnable {
             temp3= messCount.split(":");
             messCount=temp3[temp3.length-1];
 
+            messageId=id.get(i).getAttribute("href");
+            temp3=messageId.split("/");
+            messageId=temp3[temp3.length-1];
 
             try{
-            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.POST_VIEWS_COUNT, viewCount);
-            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.OLD_POST_MESSAGES_COUNT, String.valueOf(list.get(i).getPostMessagesCount()));
-            postStorage.writeChanges(Identifiers.ID, String.valueOf(list.get(i).getId()), Identifiers.POST_MESSAGES_COUNT, messCount);
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(messageId), Identifiers.POST_VIEWS_COUNT, viewCount);
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(messageId), Identifiers.OLD_POST_MESSAGES_COUNT, String.valueOf(postStorage.getPosts(Identifiers.ID, String.valueOf(messageId)).get(0).getPostMessagesCount()));
+            postStorage.writeChanges(Identifiers.ID, String.valueOf(messageId), Identifiers.POST_MESSAGES_COUNT, messCount);
             }
             catch (Exception e){print.addSting("В связи с удалением объявлений в процессе работы программы, показания счетчиков могут быть не верными. Рекомендуеся перезапустить программу.");}
+
+            sortedList.add(postStorage.getPosts(Identifiers.ID, String.valueOf(messageId)).get(0));
         }
+
+        list = sortedList;
 
           int count=refreshLinks.size();
 
@@ -267,8 +277,8 @@ public class RefreshGelezo implements Runnable {
             print.addSting("");
             print.addSting("      Объявление: "+postText);
             print.addSting("\t Статус: "+(list.get(i).getRefreshStatus() ? "Обновлено" : "Не обновлено"+(list.get(i).getPostCharacter() ? "\n Это оптовое сообщение, оно будет одновлено позже" : "")));
-            print.addSting("\t Просмотров: "+list.get(i).getPostViewsCount()+"  Сообщений под объявлением: "+list.get(i).getPostMessagesCount()+
-                    ((list.get(i).getPostMessagesCount()- list.get(i).getOldPostMessagesCount())!=0 ?   (list.get(i).getPostMessagesCount()- list.get(i).getOldPostMessagesCount())+" новое сообщение" : ""));
+            print.addSting("\t Просмотров: "+list.get(i).getPostViewsCount()+"\n\t Сообщений под объявлением: "+list.get(i).getPostMessagesCount()+
+                    ((list.get(i).getPostMessagesCount()- list.get(i).getOldPostMessagesCount())!=0 ?   " ("+(list.get(i).getPostMessagesCount()- list.get(i).getOldPostMessagesCount())+" новое сообщение)" : ""));
 
             driver.navigate().back();
 
