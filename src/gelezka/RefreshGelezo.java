@@ -25,7 +25,7 @@ public class RefreshGelezo implements Runnable {
     private List<String> listOfLinks;
     private WebElement temp;
     private boolean licensedUser;
-    private int refreshRate = 14400; // 4 hours
+    private int refreshRate = 7800; // 2.1 hours
     private int countToRefresh=0; //0 - all, 1- 1 board...
     private ProgrammWindow print;
     private PostsStorage postStorage;
@@ -62,7 +62,7 @@ public class RefreshGelezo implements Runnable {
         licensedUser=init.isLicensedUser();
         temp=licensedUser ? "полную версию программы":"пробную версию программы. Доступно только 1 объявление на 1 доске с периодом 10 часов. Чтобы использовать полную версию программы напишите письмо на gelezo.refresh@gmail.com и получите ключ";
         if (!licensedUser) {
-            refreshRate=36000;
+            refreshRate=14400;
             countToRefresh=1;
         }
         print.addSting("");
